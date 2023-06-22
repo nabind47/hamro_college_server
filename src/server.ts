@@ -1,26 +1,41 @@
-import { Request, Response } from 'express';
-import { z } from 'zod';
-import express from 'express';
-import { validateResource } from './middlewares/validation.middleware';
+import express, { Request, Response } from 'express';
+import cloudinary from 'cloudinary';
+import { unlinkSync } from 'fs';
+import upload from './middlewares/upload.middleware';
 
 const app = express();
-app.use(express.json());
 
-// Define your validation schema
-const schema = z.object({
-  name: z.string().min(2).max(50),
-  email: z.string().email(),
-  age: z.number().min(18),
+// Configure Cloudinary credentials
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'djq7boegg',
+  api_key: process.env.CLOUDINARY_API_KEY || '834811133725895',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'J04uJ4CU3h86ZbBENHi1yiSzLwg',
 });
 
-type Input = z.infer<typeof schema>;
+app.post('/upload', upload.single('image'), async (req: Request, res: Response) => {
+  try {
+    const { file } = req;
 
-// Example route using the middleware
-app.post('/users', validateResource(schema), (req: Request<{}, {}, Input>, res: Response) => {
-  const { age, email, name } = req.body;
-  res.status(200).json({ age, email, name });
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { secure_url } = await cloudinary.v2.uploader.upload(file.path, {
+      folder: 'notices', // Optional: Specify a folder in Cloudinary to store the uploaded images
+      resource_type: 'auto', // Optional: Detect the resource type automatically (image, video, raw)
+    });
+
+    res.json({ url: secure_url });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  } finally {
+    if (req.file) {
+      unlinkSync(req.file.path); // Remove the temporary file
+    }
+  }
 });
 
 app.listen(3000, () => {
-  console.log('Listening');
+  console.log('Server is running on port 3000');
 });
