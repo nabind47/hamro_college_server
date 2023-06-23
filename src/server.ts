@@ -3,7 +3,12 @@ import cloudinary from 'cloudinary';
 import { unlinkSync } from 'fs';
 import upload from './middlewares/upload.middleware';
 
+import authRoutes from './modules/auth/auth.routes';
+
 const app = express();
+app.use(express.json());
+
+app.use('/api/auth', authRoutes);
 
 // Configure Cloudinary credentials
 cloudinary.v2.config({
@@ -36,6 +41,6 @@ app.post('/upload', upload.single('image'), async (req: Request, res: Response) 
   }
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+app.listen(1337, () => {
+  console.log('Server is running on port 1337/');
 });

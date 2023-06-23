@@ -1,25 +1,33 @@
 import { Request, NextFunction, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { verifyToken } from '../modules/auth/utils/tokens.utils';
 
-import { validateSignature } from '../modules/auth/auth.utils';
+// Define an interface for extending the Request object
 
-type AuthPayload = {
-  id: string;
-};
-
+// Augment the Request type to include the user property
 declare global {
   namespace Express {
     interface Request {
-      user?: AuthPayload;
+      user?: any; // Define the user property type as per your application's user structure
     }
   }
 }
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  const signature = validateSignature(req);
-  if (signature) {
-    next();
-  } else {
-    res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Please Authenticate First' });
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    // Verify and decode the token
+    if (token) {
+      const decoded = verifyToken(token);
+      req.user = decoded; // Attach the decoded payload to the request for further use
+      next();
+    } else {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ error: 'Authentication token is missing' });
+    }
+  } catch (error: any) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ error: error.message });
   }
 };
