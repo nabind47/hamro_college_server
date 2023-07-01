@@ -3,8 +3,9 @@ import { z } from 'zod';
 export const createNoticeSchema = z.object({
   body: z.object({
     title: z.string(),
-    content: z.string(),
-    tags: z.array(z.string()),
+    summary: z.string(),
+    description: z.string(),
+    tag: z.string(),
     image: z.string().optional(),
   }),
 });
@@ -12,8 +13,9 @@ export const createNoticeSchema = z.object({
 export const updateNoticeSchema = z.object({
   body: z.object({
     title: z.string().optional(),
-    content: z.string().optional(),
-    tags: z.array(z.string()).optional(),
+    summary: z.string().optional(),
+    description: z.string().optional(),
+    tag: z.string().optional(),
     image: z.string().optional(),
   }),
 });

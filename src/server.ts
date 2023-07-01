@@ -1,44 +1,53 @@
-import express, { Request, Response } from 'express';
-import cloudinary from 'cloudinary';
-import { unlinkSync } from 'fs';
-import upload from './middlewares/upload.middleware';
+import express from 'express';
+import cors from 'cors';
+// import cloudinary from 'cloudinary';
+// import { unlinkSync } from 'fs';
+// import upload from './middlewares/upload.middleware';
 
 import authRoutes from './modules/auth/auth.routes';
+import noticeRoutes from './modules/notice/notice.routes';
 
 const app = express();
 app.use(express.json());
+// Apply CORS middleware
+app.use(cors());
 
 app.use('/api/auth', authRoutes);
+app.use('/api', noticeRoutes);
 
 // Configure Cloudinary credentials
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'djq7boegg',
-  api_key: process.env.CLOUDINARY_API_KEY || '834811133725895',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'J04uJ4CU3h86ZbBENHi1yiSzLwg',
-});
+// cloudinary.v2.config({
+//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'djq7boegg',
+//   api_key: process.env.CLOUDINARY_API_KEY || '834811133725895',
+//   api_secret: process.env.CLOUDINARY_API_SECRET || 'J04uJ4CU3h86ZbBENHi1yiSzLwg',
+// });
 
-app.post('/upload', upload.single('image'), async (req: Request, res: Response) => {
-  try {
-    const { file } = req;
+// app.post('/upload', upload.single('image'), async (req: Request, res: Response) => {
+//   try {
+//     const { file } = req;
 
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
+//     if (!file) {
+//       return res.status(400).json({ error: 'No file uploaded' });
+//     }
 
-    const { secure_url } = await cloudinary.v2.uploader.upload(file.path, {
-      folder: 'notices', // Optional: Specify a folder in Cloudinary to store the uploaded images
-      resource_type: 'auto', // Optional: Detect the resource type automatically (image, video, raw)
-    });
+//     const { secure_url } = await cloudinary.v2.uploader.upload(file.path, {
+//       folder: 'notices', // Optional: Specify a folder in Cloudinary to store the uploaded images
+//       resource_type: 'auto', // Optional: Detect the resource type automatically (image, video, raw)
+//     });
 
-    res.json({ url: secure_url });
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    res.status(500).json({ error: 'Failed to upload image' });
-  } finally {
-    if (req.file) {
-      unlinkSync(req.file.path); // Remove the temporary file
-    }
-  }
+//     res.json({ url: secure_url });
+//   } catch (error) {
+//     console.error('Error uploading image:', error);
+//     res.status(500).json({ error: 'Failed to upload image' });
+//   } finally {
+//     if (req.file) {
+//       unlinkSync(req.file.path); // Remove the temporary file
+//     }
+//   }
+// });
+
+app.get('/', (req, res) => {
+  res.send('Hello');
 });
 
 app.listen(1337, () => {

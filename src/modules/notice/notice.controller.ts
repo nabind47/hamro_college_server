@@ -2,14 +2,11 @@ import { Request, Response } from 'express';
 import { CreateNoticeInput, UpdateNoticeInput } from './notice.schema';
 import { prisma } from '../../utils/prisma';
 
-export const createNotice = async (
-  req: Request<{}, {}, CreateNoticeInput>,
-  res: Response,
-) => {
+export const createNotice = async (req: Request<{}, {}, CreateNoticeInput>, res: Response) => {
   try {
-    const { title, content, tags } = req.body;
+    const { title, summary, description, tag } = req.body;
     const notice = await prisma.notice.create({
-      data: { title, content, tags },
+      data: { title, summary, description, tag },
     });
     return res.send(notice);
   } catch (error) {
@@ -28,10 +25,7 @@ export const getNotices = async (req: Request, res: Response) => {
   }
 };
 
-export const getNotice = async (
-  req: Request<{ id: string }>,
-  res: Response,
-) => {
+export const getNotice = async (req: Request<{ id: string }>, res: Response) => {
   const noticeId = +req.params.id;
 
   try {
@@ -54,7 +48,7 @@ export const updateNotice = async (
   req: Request<{ id: string }, unknown, UpdateNoticeInput>,
   res: Response,
 ) => {
-  const { title, content, tags } = req.body;
+  const { title, summary, description, tag } = req.body;
   const noticeId = +req.params.id;
 
   try {
@@ -68,7 +62,7 @@ export const updateNotice = async (
 
     const updatedNotice = await prisma.notice.update({
       where: { id: noticeId },
-      data: { title, content, tags },
+      data: { title, summary, description, tag },
     });
 
     return res.send(updatedNotice);
@@ -78,10 +72,7 @@ export const updateNotice = async (
   }
 };
 
-export const removeNotice = async (
-  req: Request<{ id: string }>,
-  res: Response,
-) => {
+export const removeNotice = async (req: Request<{ id: string }>, res: Response) => {
   const noticeId = +req.params.id;
 
   try {

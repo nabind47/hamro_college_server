@@ -1,6 +1,6 @@
 import { Request, NextFunction, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { verifyToken } from '../modules/auth/utils/tokens.utils';
+import { verifyAccessToken } from '../modules/auth/utils/tokens.utils';
 
 // Define an interface for extending the Request object
 
@@ -14,20 +14,16 @@ declare global {
 }
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    // Verify and decode the token
-    if (token) {
-      const decoded = verifyToken(token);
-      req.user = decoded; // Attach the decoded payload to the request for further use
-      next();
-    } else {
-      return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ error: 'Authentication token is missing' });
-    }
-  } catch (error: any) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ error: error.message });
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Authentication token is missing' });
   }
+
+  const decoded = verifyAccessToken(token);
+  if (!decoded) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Invalid authentication token' });
+  }
+
+  req.user = decoded; // Attach the decoded payload to the request for further use
+  next();
 };

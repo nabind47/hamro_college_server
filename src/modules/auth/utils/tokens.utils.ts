@@ -13,22 +13,29 @@ export type AuthPayload = {
 // Define token expiration times
 const accessTokenExpiration = '15m'; // Access token expires in 15 minutes
 const refreshTokenExpiration = '7d'; // Refresh token expires in 7 days
-// Generate an access token
-export function generateAccessToken(payload: AuthPayload): string {
-  return jwt.sign(payload, accessTokenSecret, { expiresIn: accessTokenExpiration });
-}
 
-// Generate a refresh token
-export function generateRefreshToken(payload: AuthPayload): string {
-  return jwt.sign(payload, refreshTokenSecret, { expiresIn: refreshTokenExpiration });
+export function generateTokens(payload: AuthPayload): {
+  access_token: string;
+  refresh_token: string;
+} {
+  const access_token = jwt.sign(payload, accessTokenSecret, { expiresIn: accessTokenExpiration });
+  const refresh_token = jwt.sign(payload, refreshTokenSecret, {
+    expiresIn: refreshTokenExpiration,
+  });
+  return { access_token, refresh_token };
 }
 
 // Verify and decode a token
-export function verifyToken(token: string): AuthPayload | null {
+export function verifyAccessToken(token: string): AuthPayload | null {
   try {
-    const decoded = jwt.verify(token, accessTokenSecret);
-
-    return decoded as AuthPayload;
+    return jwt.verify(token, accessTokenSecret) as AuthPayload;
+  } catch (error) {
+    return null;
+  }
+}
+export function verifyRefreshToken(token: string): AuthPayload | null {
+  try {
+    return jwt.verify(token, refreshTokenSecret) as AuthPayload;
   } catch (error) {
     return null;
   }
