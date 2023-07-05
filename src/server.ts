@@ -20,15 +20,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api', noticeRoutes);
 
 // http://localhost:1337/public/images/image-1688344250817-327880280.png
-app.post('/image', uploadImageMiddleware, (req, res) => {
+app.post('/api/image', uploadImageMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'
+
   // Do something with the image, e.g., save it to a database, process it, etc.
   console.log(req.file);
   res.json({ message: 'File uploaded successfully!' });
 });
 
 // http://localhost:1337/public/files/file-1688344296566-872167895.pdf
-app.post('/file', uploadFileMiddleware, (req, res) => {
+app.post('/api/file', uploadFileMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'
   // Do something with the image, e.g., save it to a database, process it, etc.
   console.log(req.file);
