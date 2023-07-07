@@ -1,24 +1,29 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-// DATABASE_URL="mysql://root@localhost:3306/Hamro College"
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model Student {
-  id       Int      @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   name     String
-  email    String   @unique
-  crn      String   @unique
+  email    String @unique
+  crn      String @unique
   salt     String
   password String
-  role     Role     @default(STUDENT)
-  profile  Profile?
+  role     Role   @default(STUDENT)
+
+  profile    Profile?
+  borrowings Borrowing[]
+
+  semester   Semester? @relation("SemesterStudents", fields: [semesterId], references: [id])
+  semesterId Int?
+
+  @@index([semesterId])
 }
 
 model Profile {
@@ -35,8 +40,8 @@ model Profile {
   Teacher   Teacher? @relation(fields: [teacherId], references: [id])
   teacherId Int?     @unique
 
-  account Account?
-  books   Book[]
+  @@index([studentId])
+  @@index([teacherId])
 }
 
 model Teacher {
@@ -65,9 +70,13 @@ model Semester {
   description String
   total_fee   Int
 
-  subjects     Subject[]
   Department   Department? @relation(fields: [departmentId], references: [id])
   departmentId Int?
+
+  subjects Subject[]
+  students Student[] @relation("SemesterStudents")
+
+  @@index([departmentId])
 }
 
 model Subject {
@@ -80,10 +89,12 @@ model Subject {
   semesterId Int?
   books      Book[]
   teachers   Teacher[] @relation("TeacherSubject")
+
+  @@index([semesterId])
 }
 
 model Book {
-  book_id     Int     @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   description String
   cover_image String?
@@ -92,40 +103,41 @@ model Book {
   Library   Library? @relation(fields: [libraryId], references: [id])
   libraryId Int?
 
-  Profile   Profile? @relation(fields: [studentId], references: [id])
-  studentId Int?
-
   Subject   Subject? @relation(fields: [subjectId], references: [id])
   subjectId Int?
+
+  tags       Tag[]       @relation("BookTags")
+  borrowings Borrowing[]
+
+  @@index([libraryId])
+  @@index([subjectId])
+}
+
+model Borrowing {
+  id         Int       @id @default(autoincrement())
+  borrowDate DateTime  @default(now())
+  returnDate DateTime?
+
+  book   Book @relation(fields: [bookId], references: [id])
+  bookId Int
+
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId Int
+
+  @@index([bookId])
+  @@index([studentId])
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  books Book[] @relation("BookTags")
 }
 
 model Library {
-  id        Int    @id @default(autoincrement())
-  in_charge String
-  books     Book[]
-}
-
-model Account {
-  id          Int      @id @default(autoincrement())
-  paid_amount Int
-  due_amount  Int
-  validity    DateTime
-
-  transaction Transaction?
-  profile     Profile      @relation(fields: [profileId], references: [id])
-  profileId   Int          @unique
-}
-
-model Transaction {
-  id           Int    @id @default(autoincrement())
-  amount       Int
-  payment_mode String
-  description  String
-
-  account   Account  @relation(fields: [accountId], references: [id])
-  accountId Int      @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id    Int    @id @default(autoincrement())
+  books Book[]
 }
 
 model Notice {
@@ -138,17 +150,6 @@ model Notice {
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar(255)
-  content   String?
-  authorId  Int
-  image     String?  @db.VarChar(255)
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 enum Role {

@@ -67,8 +67,10 @@ export const uploadImageMiddleware = (req: Request, res: Response, next: NextFun
   imageUpload(req, res, (err: any) => {
     if (err) {
       if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE') {
+        console.log('eroor uploadImageMiddleware');
         return res.status(400).json({ error: 'File size is too large' });
       }
+      console.log('eroor uploadImageMiddleware 1');
       return res.status(400).json({ error: err.message });
     }
     next();
