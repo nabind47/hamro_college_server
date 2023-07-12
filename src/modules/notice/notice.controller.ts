@@ -2,21 +2,38 @@ import { Request, Response } from 'express';
 import { CreateNoticeInput, UpdateNoticeInput } from './notice.schema';
 import { prisma } from '../../utils/prisma';
 
+// export const createNotice = async (req: Request<{}, {}, CreateNoticeInput>, res: Response) => {
+//   try {
+//     const { title, description, tag } = req.body;
+//     const notice = await prisma.notice.create({
+//       data: { title, description, tag },
+//     });
+//     return res.send(notice);
+//   } catch (error) {
+//     console.error('Failed to create notice:', error);
+//     return res.status(500).send({ error: 'Internal server error' });
+//   }
+// };
+
 export const createNotice = async (req: Request<{}, {}, CreateNoticeInput>, res: Response) => {
   try {
-    const { title, summary, description, tag } = req.body;
+    const { title, description, tag } = req.body;
+    const imageFilename = req.file?.filename;
+
     const notice = await prisma.notice.create({
-      data: { title, summary, description, tag },
+      data: { title, description, tag, image: imageFilename },
     });
-    return res.send(notice);
+
+    res.json({ message: 'Notice created successfully!', notice });
   } catch (error) {
     console.error('Failed to create notice:', error);
-    return res.status(500).send({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const getNotices = async (req: Request, res: Response) => {
   try {
+    console.log('object');
     const notices = await prisma.notice.findMany();
     return res.send(notices);
   } catch (error) {
@@ -48,7 +65,7 @@ export const updateNotice = async (
   req: Request<{ id: string }, unknown, UpdateNoticeInput>,
   res: Response,
 ) => {
-  const { title, summary, description, tag } = req.body;
+  const { title, description, tag } = req.body;
   const noticeId = +req.params.id;
 
   try {
@@ -62,7 +79,7 @@ export const updateNotice = async (
 
     const updatedNotice = await prisma.notice.update({
       where: { id: noticeId },
-      data: { title, summary, description, tag },
+      data: { title, description, tag },
     });
 
     return res.send(updatedNotice);

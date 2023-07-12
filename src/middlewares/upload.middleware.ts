@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
+import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 
@@ -21,9 +22,9 @@ const createStorage = (destinationPath: string) =>
     },
     filename: (req, file, cb) => {
       const fileExtension = path.extname(file.originalname);
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const filename = file.fieldname + '-' + uniqueSuffix + fileExtension;
-      cb(null, filename);
+      const uniqueId = crypto.randomBytes(8).toString('hex');
+      const shortFilename = uniqueId.slice(0, 10) + fileExtension;
+      cb(null, shortFilename);
     },
   });
 
@@ -51,7 +52,6 @@ const imageStorage = createStorage(path.join('public', 'images'));
 const imageUpload = createUpload(imageStorage, new Set(IMAGE_MIME_TYPES));
 
 export const uploadFileMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  console.log('uploadFileMiddleware');
   fileUpload(req, res, (err: any) => {
     if (err) {
       if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE') {

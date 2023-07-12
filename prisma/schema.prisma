@@ -143,10 +143,9 @@ model Library {
 model Notice {
   id          Int      @id @default(autoincrement())
   title       String   @db.VarChar(255)
-  summary     String   @db.VarChar(255)
   description String
   tag         String
-  image       String?  @db.VarChar(255)
+  image       String?
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
