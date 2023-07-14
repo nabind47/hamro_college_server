@@ -43,4 +43,20 @@ const forgotPasswordSchema = z
 
 export type ForgotInput = z.infer<typeof forgotPasswordSchema>['body'];
 
-export { registerUserSchema, loginUserSchema, forgotPasswordSchema };
+// Change Password
+const chnagePasswordSchema = z
+  .object({
+    body: z.object({
+      oldPassword: z.string().min(6),
+      password: z.string().min(6),
+      passwordConfirmation: z.string().min(6),
+    }),
+  })
+  .refine((data) => data.body.password === data.body.passwordConfirmation, {
+    message: "Passwords don't match",
+    path: ['passwordConfirmation'],
+  });
+
+export type ChangeInput = z.infer<typeof chnagePasswordSchema>['body'];
+
+export { registerUserSchema, loginUserSchema, forgotPasswordSchema, chnagePasswordSchema };

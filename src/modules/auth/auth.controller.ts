@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { ForgotInput, LoginInput, RegisterInput } from './auth.schema';
+import { ChangeInput, ForgotInput, LoginInput, RegisterInput } from './auth.schema';
 import { prisma } from '../../utils/prisma';
 
 import { comparePasswords, generateHash } from './utils/password.utils';
@@ -31,7 +31,6 @@ export const register = async (req: Request<{}, {}, RegisterInput>, res: Respons
 
 // Login route handler
 export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => {
-  console.log('request coming');
   const { email, password } = req.body;
 
   try {
@@ -59,6 +58,45 @@ export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => 
     console.error(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       error: 'An internal server error occurred',
+    });
+  }
+};
+
+export const change = async (req: Request<{}, {}, ChangeInput>, res: Response) => {
+  const { oldPassword, password } = req.body;
+  const userId = req.user?.id ?? '';
+
+  try {
+    const existingUser = await prisma.student.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'No user with this email' });
+    }
+
+    const [isMatch, { salt, hashedPassword }] = await Promise.all([
+      comparePasswords(oldPassword, existingUser.password),
+      generateHash(password),
+    ]);
+
+    if (!isMatch) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        error: 'Invalid credentials',
+      });
+    }
+
+    const user = await prisma.student.update({
+      where: { id: userId },
+      data: { salt, password: hashedPassword },
+      select: { id: true, name: true, email: true }, // Add the required fields
+    });
+
+    return res.status(StatusCodes.OK).json({ data: user });
+  } catch (error) {
+    console.error('Error in password change route:', error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      error: 'Internal Server Error',
     });
   }
 };
