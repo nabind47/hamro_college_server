@@ -24,8 +24,8 @@ app.post('/api/image', uploadImageMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'
 
   // Do something with the image, e.g., save it to a database, process it, etc.
-  console.log(req.file?.filename, 'file');
-  res.json({ message: 'File uploaded successfully!' });
+  console.log(req.file);
+  res.json({ message: req.file?.filename });
 });
 
 // http://localhost:1337/public/files/file-1688344296566-872167895.pdf
