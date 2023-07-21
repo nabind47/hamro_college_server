@@ -11,7 +11,7 @@ export type AuthPayload = {
 };
 
 // Define token expiration times
-const accessTokenExpiration = '1m'; // Access token expires in 15 minutes
+const accessTokenExpiration = '1d'; // Access token expires in 15 minutes
 const refreshTokenExpiration = '7d'; // Refresh token expires in 7 days
 
 // Function to generate the access token

@@ -92,13 +92,13 @@ export const change = async (req: Request<{}, {}, ChangeInput>, res: Response) =
       });
     }
 
-    const user = await prisma.student.update({
+    await prisma.student.update({
       where: { id: userId },
       data: { salt, password: hashedPassword },
       select: { id: true, name: true, email: true }, // Add the required fields
     });
 
-    return res.status(StatusCodes.OK).json({ data: user });
+    return res.status(StatusCodes.OK).json({ message: 'Successfully changed the password' });
   } catch (error) {
     console.error('Error in password change route:', error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
