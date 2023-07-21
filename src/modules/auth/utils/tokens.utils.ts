@@ -1,8 +1,8 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 // Define secret keys for signing the tokens
-const accessTokenSecret = 'your_access_token_secret_key';
-const refreshTokenSecret = 'your_refresh_token_secret_key';
+const accessTokenSecret = 'myaccesstoken';
+const refreshTokenSecret = 'myrefreshtoken';
 
 export type AuthPayload = {
   id: number;
@@ -14,23 +14,31 @@ export type AuthPayload = {
 const accessTokenExpiration = '1m'; // Access token expires in 15 minutes
 const refreshTokenExpiration = '7d'; // Refresh token expires in 7 days
 
-export function generateTokens(payload: AuthPayload): {
-  access_token: string;
-  refresh_token: string;
-} {
+// Function to generate the access token
+export function generateAccessToken(payload: AuthPayload): string {
   const access_token = jwt.sign(payload, accessTokenSecret, { expiresIn: accessTokenExpiration });
+  return access_token;
+}
+
+// Function to generate the refresh token
+export function generateRefreshToken(payload: AuthPayload): string {
   const refresh_token = jwt.sign(payload, refreshTokenSecret, {
     expiresIn: refreshTokenExpiration,
   });
-  return { access_token, refresh_token };
+  return refresh_token;
 }
 
 // Verify and decode a token
-export function verifyAccessToken(token: string): AuthPayload | null {
+export function verifyAccessToken(token: string): AuthPayload {
   try {
     return jwt.verify(token, accessTokenSecret) as AuthPayload;
   } catch (error) {
-    return null;
+    if (error instanceof TokenExpiredError) {
+      throw new Error('Token has expired');
+    } else if (error instanceof JsonWebTokenError) {
+      throw new Error('Invalid authentication token');
+    }
+    throw error;
   }
 }
 export function verifyRefreshToken(token: string): AuthPayload | null {

@@ -17,7 +17,9 @@ model Student {
   password String
   role     Role   @default(STUDENT)
 
-  profile    Profile?
+  profile StudentProfile?
+
+  attendance Attendance?
   borrowings Borrowing[]
 
   semester   Semester? @relation("SemesterStudents", fields: [semesterId], references: [id])
@@ -26,7 +28,7 @@ model Student {
   @@index([semesterId])
 }
 
-model Profile {
+model StudentProfile {
   id            Int       @id @default(autoincrement())
   photo         String?
   address       String?
@@ -34,14 +36,10 @@ model Profile {
   date_of_birth DateTime?
   joinedDate    DateTime?
 
-  Student   Student? @relation(fields: [studentId], references: [id])
-  studentId Int?     @unique
-
-  Teacher   Teacher? @relation(fields: [teacherId], references: [id])
-  teacherId Int?     @unique
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId Int     @unique
 
   @@index([studentId])
-  @@index([teacherId])
 }
 
 model Teacher {
@@ -53,8 +51,25 @@ model Teacher {
   phone_number  String
   role          Role     @default(TEACHER)
 
-  profile  Profile?
+  profile TeacherProfile?
+
   subjects Subject[] @relation("TeacherSubject")
+
+  @@index([name])
+}
+
+model TeacherProfile {
+  id            Int       @id @default(autoincrement())
+  photo         String?
+  address       String?
+  phone_number  String
+  date_of_birth DateTime?
+  joinedDate    DateTime?
+
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+  teacherId Int     @unique
+
+  @@index([teacherId])
 }
 
 model Department {
@@ -65,12 +80,11 @@ model Department {
 }
 
 model Semester {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String
-  total_fee   Int
+  id        Int    @id @default(autoincrement())
+  title     String
+  total_fee Int
 
-  Department   Department? @relation(fields: [departmentId], references: [id])
+  department   Department? @relation(fields: [departmentId], references: [id])
   departmentId Int?
 
   subjects Subject[]
@@ -82,10 +96,10 @@ model Semester {
 model Subject {
   id           Int    @id @default(autoincrement())
   title        String
-  description  String
   credit_hours Int
+  sub_code     String
 
-  Semester   Semester? @relation(fields: [semesterId], references: [id])
+  semester   Semester? @relation(fields: [semesterId], references: [id])
   semesterId Int?
   books      Book[]
   teachers   Teacher[] @relation("TeacherSubject")
@@ -96,14 +110,13 @@ model Subject {
 model Book {
   id          Int     @id @default(autoincrement())
   title       String
-  description String
   cover_image String?
   quantity    Int?    @default(1)
 
-  Library   Library? @relation(fields: [libraryId], references: [id])
+  library   Library? @relation(fields: [libraryId], references: [id])
   libraryId Int?
 
-  Subject   Subject? @relation(fields: [subjectId], references: [id])
+  subject   Subject? @relation(fields: [subjectId], references: [id])
   subjectId Int?
 
   tags       Tag[]       @relation("BookTags")
@@ -138,6 +151,17 @@ model Tag {
 model Library {
   id    Int    @id @default(autoincrement())
   books Book[]
+}
+
+model Attendance {
+  id          Int @id @default(autoincrement())
+  presentDays Int
+  absentDays  Int
+
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId Int?     @unique
+
+  @@index([studentId])
 }
 
 model Notice {

@@ -7,25 +7,26 @@ CREATE TABLE `Student` (
     `salt` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `role` ENUM('STUDENT', 'TEACHER', 'ADMIN') NOT NULL DEFAULT 'STUDENT',
+    `semesterId` INTEGER NULL,
 
     UNIQUE INDEX `Student_email_key`(`email`),
     UNIQUE INDEX `Student_crn_key`(`crn`),
+    INDEX `Student_semesterId_idx`(`semesterId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Profile` (
+CREATE TABLE `StudentProfile` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `photo` VARCHAR(191) NULL,
     `address` VARCHAR(191) NULL,
     `phone_number` VARCHAR(191) NOT NULL,
     `date_of_birth` DATETIME(3) NULL,
     `joinedDate` DATETIME(3) NULL,
-    `studentId` INTEGER NULL,
-    `teacherId` INTEGER NULL,
+    `studentId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `Profile_studentId_key`(`studentId`),
-    UNIQUE INDEX `Profile_teacherId_key`(`teacherId`),
+    UNIQUE INDEX `StudentProfile_studentId_key`(`studentId`),
+    INDEX `StudentProfile_studentId_idx`(`studentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -39,6 +40,22 @@ CREATE TABLE `Teacher` (
     `phone_number` VARCHAR(191) NOT NULL,
     `role` ENUM('STUDENT', 'TEACHER', 'ADMIN') NOT NULL DEFAULT 'TEACHER',
 
+    INDEX `Teacher_name_idx`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `TeacherProfile` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `photo` VARCHAR(191) NULL,
+    `address` VARCHAR(191) NULL,
+    `phone_number` VARCHAR(191) NOT NULL,
+    `date_of_birth` DATETIME(3) NULL,
+    `joinedDate` DATETIME(3) NULL,
+    `teacherId` INTEGER NOT NULL,
+
+    UNIQUE INDEX `TeacherProfile_teacherId_key`(`teacherId`),
+    INDEX `TeacherProfile_teacherId_idx`(`teacherId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -54,10 +71,10 @@ CREATE TABLE `Department` (
 CREATE TABLE `Semester` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
     `total_fee` INTEGER NOT NULL,
     `departmentId` INTEGER NULL,
 
+    INDEX `Semester_departmentId_idx`(`departmentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -65,58 +82,66 @@ CREATE TABLE `Semester` (
 CREATE TABLE `Subject` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
     `credit_hours` INTEGER NOT NULL,
+    `sub_code` VARCHAR(191) NOT NULL,
     `semesterId` INTEGER NULL,
 
+    INDEX `Subject_semesterId_idx`(`semesterId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Book` (
-    `book_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
     `cover_image` VARCHAR(191) NULL,
     `quantity` INTEGER NULL DEFAULT 1,
     `libraryId` INTEGER NULL,
-    `studentId` INTEGER NULL,
     `subjectId` INTEGER NULL,
 
-    PRIMARY KEY (`book_id`)
+    INDEX `Book_libraryId_idx`(`libraryId`),
+    INDEX `Book_subjectId_idx`(`subjectId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Borrowing` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `borrowDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `returnDate` DATETIME(3) NULL,
+    `bookId` INTEGER NOT NULL,
+    `studentId` INTEGER NOT NULL,
+
+    INDEX `Borrowing_bookId_idx`(`bookId`),
+    INDEX `Borrowing_studentId_idx`(`studentId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Tag` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `Tag_name_key`(`name`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Library` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `in_charge` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Account` (
+CREATE TABLE `Attendance` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `paid_amount` INTEGER NOT NULL,
-    `due_amount` INTEGER NOT NULL,
-    `validity` DATETIME(3) NOT NULL,
-    `profileId` INTEGER NOT NULL,
+    `presentDays` INTEGER NOT NULL,
+    `absentDays` INTEGER NOT NULL,
+    `studentId` INTEGER NULL,
 
-    UNIQUE INDEX `Account_profileId_key`(`profileId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Transaction` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `amount` INTEGER NOT NULL,
-    `payment_mode` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
-    `accountId` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Transaction_accountId_key`(`accountId`),
+    UNIQUE INDEX `Attendance_studentId_key`(`studentId`),
+    INDEX `Attendance_studentId_idx`(`studentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -124,24 +149,9 @@ CREATE TABLE `Transaction` (
 CREATE TABLE `Notice` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(255) NOT NULL,
-    `summary` VARCHAR(255) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
     `tag` VARCHAR(191) NOT NULL,
-    `image` VARCHAR(255) NULL,
-    `published` BOOLEAN NOT NULL DEFAULT false,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Post` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(255) NOT NULL,
-    `content` VARCHAR(191) NULL,
-    `authorId` INTEGER NOT NULL,
-    `image` VARCHAR(255) NULL,
+    `image` VARCHAR(191) NULL,
     `published` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -158,35 +168,11 @@ CREATE TABLE `_TeacherSubject` (
     INDEX `_TeacherSubject_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AddForeignKey
-ALTER TABLE `Profile` ADD CONSTRAINT `Profile_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `Student`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+-- CreateTable
+CREATE TABLE `_BookTags` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
 
--- AddForeignKey
-ALTER TABLE `Profile` ADD CONSTRAINT `Profile_teacherId_fkey` FOREIGN KEY (`teacherId`) REFERENCES `Teacher`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Semester` ADD CONSTRAINT `Semester_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Subject` ADD CONSTRAINT `Subject_semesterId_fkey` FOREIGN KEY (`semesterId`) REFERENCES `Semester`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Book` ADD CONSTRAINT `Book_libraryId_fkey` FOREIGN KEY (`libraryId`) REFERENCES `Library`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Book` ADD CONSTRAINT `Book_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `Profile`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Book` ADD CONSTRAINT `Book_subjectId_fkey` FOREIGN KEY (`subjectId`) REFERENCES `Subject`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Account` ADD CONSTRAINT `Account_profileId_fkey` FOREIGN KEY (`profileId`) REFERENCES `Profile`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_accountId_fkey` FOREIGN KEY (`accountId`) REFERENCES `Account`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_TeacherSubject` ADD CONSTRAINT `_TeacherSubject_A_fkey` FOREIGN KEY (`A`) REFERENCES `Subject`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_TeacherSubject` ADD CONSTRAINT `_TeacherSubject_B_fkey` FOREIGN KEY (`B`) REFERENCES `Teacher`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+    UNIQUE INDEX `_BookTags_AB_unique`(`A`, `B`),
+    INDEX `_BookTags_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

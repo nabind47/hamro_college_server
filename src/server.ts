@@ -2,11 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 
-import authRoutes from './modules/auth/auth.routes';
-import noticeRoutes from './modules/notice/notice.routes';
 import { uploadFileMiddleware, uploadImageMiddleware } from './middlewares/upload.middleware';
 
+import authRoutes from './modules/auth/auth.routes';
+import noticeRoutes from './modules/notice/notice.routes';
+import studentsRoutes from './modules/students/student.routes';
+import departmentRoutes from './modules/department/department.routes';
+import semesterRoutes from './modules/semester/semester.routes';
+import subjectRoutes from './modules/subject/subject.routes';
+
 const app = express();
+
 app.use(express.json());
 
 // Set up the static file middleware to serve the uploaded files
@@ -16,19 +22,21 @@ app.use('/public/images', express.static(path.join(__dirname, '..', 'public', 'i
 // Apply CORS middleware
 app.use(cors());
 
+// Mount specific routes
 app.use('/api/auth', authRoutes);
 app.use('/api', noticeRoutes);
+app.use('/api/students', studentsRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/subjects', subjectRoutes);
 
-// http://localhost:1337/public/images/image-1688344250817-327880280.png
 app.post('/api/image', uploadImageMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'
-
   // Do something with the image, e.g., save it to a database, process it, etc.
   console.log(req.file);
   res.json({ message: req.file?.filename });
 });
 
-// http://localhost:1337/public/files/file-1688344296566-872167895.pdf
 app.post('/api/file', uploadFileMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'
   // Do something with the image, e.g., save it to a database, process it, etc.

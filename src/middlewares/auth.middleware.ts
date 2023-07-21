@@ -19,11 +19,14 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Authentication token is missing' });
   }
 
-  const decoded = verifyAccessToken(token);
-  if (!decoded) {
+  try {
+    const decoded = verifyAccessToken(token);
+    req.user = decoded; // Attach the decoded payload to the request for further use
+    next();
+  } catch (error: any) {
+    if (error?.message === 'Token has expired') {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token has expired' });
+    }
     return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Invalid authentication token' });
   }
-
-  req.user = decoded; // Attach the decoded payload to the request for further use
-  next();
 };

@@ -5,7 +5,11 @@ import { ChangeInput, ForgotInput, LoginInput, RegisterInput } from './auth.sche
 import { prisma } from '../../utils/prisma';
 
 import { comparePasswords, generateHash } from './utils/password.utils';
-import { generateTokens, verifyRefreshToken } from './utils/tokens.utils';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from './utils/tokens.utils';
 
 // Registration route handler
 export const register = async (req: Request<{}, {}, RegisterInput>, res: Response) => {
@@ -42,18 +46,20 @@ export const login = async (req: Request<{}, {}, LoginInput>, res: Response) => 
       return res.status(StatusCodes.NOT_FOUND).json({ error: 'No user with this email' });
     }
 
-    const { id, email: userEmail, role } = existingUser;
+    const { id, role } = existingUser;
+
     const isMatch = await comparePasswords(password, existingUser.password);
+
     if (!isMatch) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
         error: 'Invalid credentials',
       });
     }
 
-    const tokens = generateTokens({ id, email, role });
-    console.log('tokens', tokens);
+    const access_token = generateAccessToken({ id, email, role });
+    const refresh_token = generateRefreshToken({ id, email, role });
 
-    return res.status(StatusCodes.OK).json(tokens);
+    return res.status(StatusCodes.OK).json({ access_token, refresh_token });
   } catch (error) {
     console.error(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -144,12 +150,13 @@ export const refresh = async (req: Request, res: Response) => {
         error: 'Invalid refresh token',
       });
     }
+    const access_token = generateAccessToken({
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+    });
 
-    // Perform additional checks if needed (e.g., check token expiration, blacklist, etc.)
-    const { id, email, role } = decoded;
-    const tokens = generateTokens({ id, email, role });
-
-    return res.status(StatusCodes.OK).json(tokens);
+    return res.status(StatusCodes.OK).json({ access_token });
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       error: 'An error occurred while refreshing tokens',
