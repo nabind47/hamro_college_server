@@ -165,32 +165,49 @@ export const refresh = async (req: Request, res: Response) => {
 };
 
 export const getProfile = async (req: Request, res: Response) => {
-  console.log('request');
-
   const userId = req.user?.id; // Assuming the user ID is stored in req.user.id
-
-  console.log(userId, userId);
 
   try {
     const user = await prisma.student.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        crn: true,
+        role: true,
+        semester: true,
+        profile: true,
+      },
     });
 
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: 'User not found' });
     }
 
-    // You can customize the data you want to send in the response
-    const userProfile = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      // Add more fields as needed
-    };
-
-    return res.status(StatusCodes.OK).json(userProfile);
+    return res.status(StatusCodes.OK).json(user);
   } catch (error) {
     console.error(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
   }
+};
+
+export const changeProfilePicture = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const image = req.file?.filename;
+
+  const user = await prisma.student.update({
+    where: { id: userId },
+    data: {
+      profile: {
+        update: {
+          photo: image,
+        },
+      },
+    },
+    include: {
+      profile: true,
+    },
+  });
+  return res.status(StatusCodes.CREATED).json({ user });
 };

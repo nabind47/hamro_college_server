@@ -32,7 +32,7 @@ model StudentProfile {
   id            Int       @id @default(autoincrement())
   photo         String?
   address       String?
-  phone_number  String
+  phone_number  String?
   date_of_birth DateTime?
   joinedDate    DateTime?
 

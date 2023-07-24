@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 
-import { uploadFileMiddleware, uploadImageMiddleware } from './middlewares/upload.middleware';
+import { uploadFileMiddleware } from './middlewares/upload.middleware';
 
 import authRoutes from './modules/auth/auth.routes';
 import noticeRoutes from './modules/notice/notice.routes';
@@ -29,13 +29,6 @@ app.use('/api/students', studentsRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/subjects', subjectRoutes);
-
-app.post('/api/image', uploadImageMiddleware, (req, res) => {
-  // Access the uploaded image using 'req.file'
-  // Do something with the image, e.g., save it to a database, process it, etc.
-  console.log(req.file);
-  res.json({ message: req.file?.filename });
-});
 
 app.post('/api/file', uploadFileMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'

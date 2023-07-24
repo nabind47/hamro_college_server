@@ -17,4 +17,4 @@ export const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
 export const FILE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-export const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+export const IMAGE_MAX_SIZE = 10 * 1024 * 1024; // 5MB
