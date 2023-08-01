@@ -196,18 +196,37 @@ export const changeProfilePicture = async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const image = req.file?.filename;
 
-  const user = await prisma.student.update({
-    where: { id: userId },
-    data: {
-      profile: {
-        update: {
+  try {
+    // Check if the user has an associated StudentProfile
+    const user = await prisma.student.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+
+    if (!user?.profile) {
+      // If the user doesn't have a StudentProfile, create one
+      const newProfile = await prisma.studentProfile.create({
+        data: {
+          photo: image,
+          student: {
+            connect: { id: userId },
+          },
+        },
+      });
+
+      return res.status(StatusCodes.CREATED).json({ user: { ...user, profile: newProfile } });
+    } else {
+      // If the user already has a StudentProfile, update the photo
+      const updatedProfile = await prisma.studentProfile.update({
+        where: { id: user.profile.id },
+        data: {
           photo: image,
         },
-      },
-    },
-    include: {
-      profile: true,
-    },
-  });
-  return res.status(StatusCodes.CREATED).json({ user });
+      });
+
+      return res.status(StatusCodes.CREATED).json({ user: { ...user, profile: updatedProfile } });
+    }
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred.' });
+  }
 };
