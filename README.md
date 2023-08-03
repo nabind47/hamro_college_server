@@ -163,3 +163,8 @@ export const uploadImageMiddleware = (req: Request, res: Response, next: NextFun
 ```
 
 > **_It incorporates the suggested improvements for better performance, such as using asynchronous file system operations (`fs.promises`), creating destination folders only once during server startup, and utilizing `Set` data structure for faster lookup of allowed MIME types. By using async operations, the code avoids blocking the event loop, resulting in better concurrency and responsiveness. Creating the destination folders once reduces unnecessary checks and filesystem operations. Using `Set` for allowed MIME types improves lookup performance compared to an array._**
+
+
+```sh
+npx prisma migrate dev --name your-migration-name
+```

@@ -10,6 +10,7 @@ import studentsRoutes from './modules/students/student.routes';
 import departmentRoutes from './modules/department/department.routes';
 import semesterRoutes from './modules/semester/semester.routes';
 import subjectRoutes from './modules/subject/subject.routes';
+import postRoutes from './modules/post/post.routes';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/students', studentsRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/subjects', subjectRoutes);
+app.use('/api/posts', postRoutes);
 
 app.post('/api/file', uploadFileMiddleware, (req, res) => {
   // Access the uploaded image using 'req.file'
