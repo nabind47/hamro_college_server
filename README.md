@@ -51,9 +51,9 @@ package.json
 ```ts
 // Configure Cloudinary credentials
 cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'djq7boegg',
-  api_key: process.env.CLOUDINARY_API_KEY || '834811133725895',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'J04uJ4CU3h86ZbBENHi1yiSzLwg',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
+  api_key: process.env.CLOUDINARY_API_KEY || '',
+  api_secret: process.env.CLOUDINARY_API_SECRET || '',
 });
 
 app.post('/upload', upload.single('image'), async (req: Request, res: Response) => {
